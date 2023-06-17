@@ -43,20 +43,26 @@ export default function Home({ user }: { user: User }) {
   }
 
   return (
-    <>
-      <div>
+      <>
+      <style jsx global>{`
+        body {
+          background-color: black;
+        }
+      `}</style>
 
-        {posts && posts.map((post, index) => (
-          <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
-            <h2 style={{margin: '0 0 10px 0'}}>{post.title}</h2>
-            <h3 style={{margin: '0 0 10px 0'}}>Author: {post.authors}</h3>
-            <p style={{margin: '0 0 10px 0'}}>{post.content}</p>
-            <a href={post.pdf}>View PDF</a>
+        <div className={styles.container}>
+          {/* nav bar */}
+          {posts && posts.map((post, index) => (
+          <div key={post.id} className={styles.post}>
+            <h2 className={styles.title}>{post.title}</h2>
+            <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
+            <p className={styles.content}>{post.content}</p>
+            <a href={post.pdf} className={styles.link}>View PDF</a>
             {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
-            <p>{post.embedding.join(', ')}</p>
+            {post.embedding && <p>{post.embedding.join(', ')}</p>}
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
     </>
   )
 }
