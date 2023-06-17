@@ -9,7 +9,7 @@ type Post = {
   id: number,
   created_at: string,
   title: string,
-  authors: string,
+  authors: string[],
   content: string,
   pdf: string,
   embedding: number[]
@@ -58,6 +58,7 @@ export default function Home({ user }: { user: User }) {
           </div>
         ))}
       </div>
+    </>
   )
 }
 
