@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
-import {  GetServerSidePropsContext } from 'next'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 
@@ -15,9 +14,6 @@ type Post = {
   pdf: string,
   embedding: number[]
 }
-
-import NavBarComponent from '@/components/NavBarComponent'
-
 
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
@@ -50,7 +46,6 @@ export default function Home({ user }: { user: User }) {
   return (
     <>
       <div>
-          <NavBarComponent />
 
         {posts && posts.map((post, index) => (
           <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
