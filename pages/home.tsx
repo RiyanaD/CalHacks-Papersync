@@ -5,20 +5,20 @@ import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
 
 export default function Home({ user }: { user: User }) {
-  const supabase = useSupabaseClient<Database>()
+  
 
   return (
     <>
-      <div>
-        HOME PAGE
-        <button
-          onClick={() => {
-            console.log(user)
-          }}
-        >
-          click
-        </button>
-      </div>
+    <div className = "grid grid-cols">
+        <div className="flex flex-row">
+          <h1 className="p-4 font-family: sans-serif">PaperSync</h1>
+          <button className="p-4 font-family: sans-serif outline-4">
+            Create a Post
+
+          </button>
+        </div>
+    </div>
+
     </>
   )
 }

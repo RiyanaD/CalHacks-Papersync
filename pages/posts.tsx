@@ -1,191 +1,142 @@
-import { useEffect, useState } from 'react'
-import { useSupabaseClient } from '@supabase/auth-helpers-react'
-import PostComponent from '@/components/PostComponent'
-import { Post } from '@/types/types'
-import { GetServerSidePropsContext } from 'next'
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
+import { Database } from '../types/database'
+import {  GetServerSidePropsContext } from 'next'
 
-// custom type for the fetchPosts() function supabase query
-// note: could export this type and that function to separate file
-// note: create hook handling fetching data
-type PostsResponse = Post & {
-  users: {
-    first_name: string | null
-    last_name: string | null
-  }
+interface Post {
+  created_at: Date;
+  title: string;
+  authors:  string[];
+  content: string;
+  pdf: string;
+  embedding: number[];
+  poster_id: any;
+
 }
 
-export default function Posts({ user }: { user: User }) {
-  const supabase = useSupabaseClient()
-  // load posts
-  const [posts, setPosts] = useState<PostsResponse[]>([])
-  const [loading, setLoading] = useState(true)
-  // add post
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+// Initialize Supabase client
+const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnc3FybG9kZGlia2dmYmJpaHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODcwMTk4NDksImV4cCI6MjAwMjU5NTg0OX0.dIjB8bcDtniKGy54YC1ZYhvvFmvRB7igDJAZheYCRN0', {
+  schema: 'public'
+});
 
-  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.target.value)
+// ...
+
+export default function Posts({ initialSession } : {initiailSession: any}) {
+  const [title, setTitle] = useState('');
+  const [authors, setAuthors] = useState<string[]>(['']);
+  const [content, setContent] = useState('');
+  const [created_at, setCreatedAt] = useState(new Date());
+  const [embedding, setEmbedding] = useState<number[]>([]);
+  const [pdf, setPDF] = useState('');
+  const [poster_id, setPosterID] = useState('');
+  
+
+  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+
+  const handlePostIDChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPosterID(e.target.value);
   }
 
-  const onContentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setContent(event.target.value)
-  }
+  const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+  };
 
-  const fetchPosts = async () => {
-    // this joins the users table with the posts table
-    const { data, error } = await supabase.from('posts').select(
-      `
-    post_id,
-    title,
-    content,
-    likes,
-    user_id,
-    users(
-      first_name,
-      last_name
-    )
-  `
-    )
-    // .order('likes', {
-    //   ascending: true,
-    // })
+  const handleAuthorsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const inputAuthors = e.target.value.split(','); // Assuming the authors are separated by commas
+    setAuthors(inputAuthors);
+  };
 
-    if (error) {
-      console.log('error', error)
-      return
+  const handlePDFChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPDF(e.target.value);
+  };
+
+
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Perform validation if needed
+    if (!title || !content) {
+      console.log('Invalid post. Title and content are required.');
+      return;
     }
 
-    console.log('setting posts to', data)
+    const post: Post = {
+      //created_at: created_at,
+      title: title,
+      authors: authors,
+      content: content,
+      pdf: pdf,
+      //embedding: embedding,
+      poster_id: initialSession.user.id,
+    };
+    // Perform further actions with the post object
+    // For example, you could send it to a server or save it to a database
+    try {
+        const { data, error } = await supabase.from('posts').insert([post]);
 
-    if (data) {
-      setPosts(data as PostsResponse[])
-      setLoading(false)
-    }
-  }
-
-  const fetchPost = async (postId: string): Promise<PostsResponse> => {
-    const { data, error } = await supabase
-      .from('posts')
-      .select(
-        `
-    post_id,
-    title,
-    content,
-    likes,
-    user_id,
-    users(
-      first_name,
-      last_name
-    )
-  `
-      )
-      .eq('post_id', postId)
-      .single()
-
-    console.log('fetch post data', data)
-
-    return data! as PostsResponse
-  }
-
-  useEffect(() => {
-    fetchPosts()
-  }, [])
-
-  useEffect(() => {
-
-    const postsSubscription = supabase
-      .channel('custom-insert-channel')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'posts' },
-        async (payload) => {
-          console.log('Change received!', payload)
-          const newPost = await fetchPost(payload.new.post_id)
-
-          console.log('posts', posts)
-          setPosts((posts) => [newPost, ...posts])
+        if (error) {
+        console.error('Error inserting post:', error);
+        } else {
+        console.log('Your post has been created');
         }
-      )
-      .subscribe()
-
-    return () => {
-      if (postsSubscription) postsSubscription.unsubscribe()
+    } catch (error) {
+        console.error('Error inserting post:', error);
     }
-  }, [])
-
-  const submitPost = async () => {
-    const { data, error } = await supabase
-      .from('posts')
-      .insert([{ title: title, content: content, user_id: user!.id }])
-
-    console.log('submit data', data)
-    console.log('submit error', error)
-  }
-
-  const signOutSupabaseUser = async () => {
-    const { error } = await supabase.auth.signOut()
-    console.log('signout err', error)
-  }
-
-  const logPosts = () => {
-    console.log('posts', posts)
-  }
+  };
 
   return (
-    <>
-      <div className='h-screen w-full '>
-        <button onClick={logPosts}>log posts</button>
-        <div className='w-full py-8 grid place-items-center border-b-2 border-b-black'>
-          <h1>Posts</h1>
-          <button onClick={signOutSupabaseUser}>signout</button>
+    <div className="flex flex-row justify-center">
+      <form onSubmit={handleSubmit} className="flex flex-col p-4">
+        <div className="mb-2 p-4 text-center">
+          <label className="block pb-3" htmlFor="title">Title</label>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={handleTitleChange}
+            className="text-center"
+          />
         </div>
-        <div className='w-full py-8 flex justify-center items-center border-b-2 border-b-black gap-x-4'>
-          <h2>Add Post</h2>
-          <div className='flex flex-col gap-y-2'>
-            <input
-              type='text'
-              placeholder='title'
-              className='border-2 p-2'
-              onChange={onTitleChange}
-              value={title}
-            />
-            <input
-              type='text'
-              placeholder='content'
-              className='border-2 p-2'
-              onChange={onContentChange}
-              value={content}
-            />
-            <button
-              onClick={() => {
-                submitPost()
-              }}
-              className='border-2 p-2 text-gray-600 hover:bg-gray-200'
-            >
-              Submit
-            </button>
-          </div>
+        <div className="mb-2 p-4 text-center">
+          <label className="block pb-3" htmlFor="authors">Authors</label>
+          <input
+            type="text"
+            id="authors"
+            value={authors}
+            onChange={handleAuthorsChange}
+            className="text-center"
+          />
         </div>
-        <div className='flex flex-col w-full items-center'>
-          {!loading &&
-            posts.map((post) => {
-              return (
-                <PostComponent
-                  author={post.users.first_name + ' ' + post.users.last_name}
-                  title={post.title}
-                  content={post.content}
-                  likes={post.likes}
-                  key={post.post_id}
-                />
-              )
-            })}
-          {loading && <p>Loading...</p>}
+        <div className="mb-2 p-4 text-center">
+          <label className="block pb-3" htmlFor="content">Content</label>
+          <textarea
+            id="content"
+            value={content}
+            onChange={handleContentChange}
+            className="text-center"
+          ></textarea>
         </div>
-      </div>
-    </>
-  )
-}
+        
+        <div className="mb-2 p-4 text-center">
+          <label className="block pb-3" htmlFor="pdf">PDF</label>
+          <input
+            type="text"
+            id="pdf"
+            value={pdf}
+            onChange={handlePDFChange}
+            className="text-center"
+          />
+        </div>
+        <button type="submit">Create Post</button>
+      </form>
+    </div>
+  );
+};
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
