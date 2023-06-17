@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
+import {  GetServerSidePropsContext } from 'next'
+import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 
 type Post = {
@@ -57,7 +59,6 @@ export default function Home({ user }: { user: User }) {
           </div>
         ))}
       </div>
-    </>
   )
 }
 
