@@ -3,13 +3,18 @@ import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
+import styles from "../styles/Styles.module.css"
 
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
 
   return (
-    <>
-      <div>
+    <div style={{}}>
+        <style>{`
+          body {
+            background-color: black;
+          }
+        `}</style>
         HOME PAGE
         <button
           onClick={() => {
@@ -19,7 +24,6 @@ export default function Home({ user }: { user: User }) {
           click
         </button>
       </div>
-    </>
   )
 }
 
