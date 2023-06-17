@@ -4,20 +4,16 @@ import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
 import styles from "../styles/Styles.module.css"
-import { GetServerSidePropsContext } from 'next'
 
 type Post = {
   id: number,
   created_at: string,
   title: string,
-  authors: string,
+  authors: string[],
   content: string,
   pdf: string,
   embedding: number[]
 }
-
-import NavBarComponent from '@/components/NavBarComponent'
-
 
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
@@ -48,21 +44,27 @@ export default function Home({ user }: { user: User }) {
   }
 
   return (
-    <>
-      <div>
-          <NavBarComponent />
-
-        {posts && posts.map((post, index) => (
-          <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
-            <h2 style={{margin: '0 0 10px 0'}}>{post.title}</h2>
-            <h3 style={{margin: '0 0 10px 0'}}>Author: {post.authors}</h3>
-            <p style={{margin: '0 0 10px 0'}}>{post.content}</p>
-            <a href={post.pdf}>View PDF</a>
-            {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
-            <p>{post.embedding.join(', ')}</p>
-          </div>
-        ))}
-      </div>
+      <>
+        <div style={{}}>
+        <style>{`
+            body {
+              background-color: black;
+            }
+          `}</style>
+          {/* nav bar */}
+          {posts && posts.map((post, index) => (
+            <div key={post.id} style={{border: '1px solid #ccc', backgroundColor: '#222', borderRadius: '8px', margin: '10px 0', padding: '10px', color: 'white'}}>
+              <h2 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>{post.title}</h2>
+              <h3 style={{margin: '0 0 10px 0', fontSize: '10px'}}>Author: {post.authors.join(', ')}</h3>
+              <p style={{margin: '0 0 10px 0'}}>{post.content}</p>
+              <a href={post.pdf}>View PDF</a>
+              {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
+              {/* <p>{post.embedding.join(', ')}</p> */}
+              {post.embedding && <p>{post.embedding.join(', ')}</p>}
+            </div>
+          ))}
+        </div>
+    </>
   )
 }
 
