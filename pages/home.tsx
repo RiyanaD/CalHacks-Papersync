@@ -16,6 +16,9 @@ type Post = {
   embedding: number[]
 }
 
+import NavBarComponent from '@/components/NavBarComponent'
+
+
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
   const [posts, setPosts] = useState<Post[]>([])
@@ -47,6 +50,7 @@ export default function Home({ user }: { user: User }) {
   return (
     <>
       <div>
+          <NavBarComponent />
 
         {posts && posts.map((post, index) => (
           <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
