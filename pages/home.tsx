@@ -4,12 +4,16 @@ import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
 
+import NavBarComponent from '@/components/NavBarComponent'
+
+
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
 
   return (
     <>
-      <div>
+      <div style={{ backgroundColor: 'black' }}>
+        <NavBarComponent />
         HOME PAGE
         <button
           onClick={() => {
