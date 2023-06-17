@@ -3,6 +3,7 @@ import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { GetServerSidePropsContext } from 'next'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
+import NavBarComponent from '@/components/NavBarComponent'
 
 type Profile = {
     id?: number;
@@ -18,8 +19,8 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
   const [editing, setEditing] = useState(false)
   const [updatedField, setUpdatedField] = useState<{ [key: string]: string }>({})
 
-  const handleInputChange = (e : any) => {
-    setUpdatedField({ [e.target.name]: e.target.value })
+  const handleInputChange = (e: any) => {
+    setUpdatedField(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const updateProfile = async () => {
@@ -39,6 +40,7 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
 
   return (
     <div>
+        <NavBarComponent/>
       {editing ? (
         <>
           <input name="name" onChange={handleInputChange} defaultValue={userProfile?.name} />
@@ -89,7 +91,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
 
     console.log(session.user.id)
-    console.log(profileData)
+    console.log(profileData[0])
   
     const profile = profileData[0] || null;
   

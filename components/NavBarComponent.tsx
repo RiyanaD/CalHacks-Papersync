@@ -16,7 +16,7 @@ const NavBarComponent = () => {
             <img src={logo.src} alt = "Placeholder" className='max-w-full max-h-full'/>
         </a>
         <a href ="/posts" className="absolute left-[222px] top-[30px] text-xl text-left text-white">Publish</a>
-        <a href ="/home" className="absolute left-[346px] top-[30px] text-xl text-left text-white">Profile</a>
+        <a href ="/profile" className="absolute left-[346px] top-[30px] text-xl text-left text-white">Profile</a>
     </div>
     )
 }

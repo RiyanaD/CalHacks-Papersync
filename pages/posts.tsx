@@ -4,6 +4,7 @@ import PostComponent from '@/components/PostComponent'
 import { Post } from '@/types/types'
 import { GetServerSidePropsContext } from 'next'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
+import NavBarComponent from '@/components/NavBarComponent'
 
 // custom type for the fetchPosts() function supabase query
 // note: could export this type and that function to separate file
@@ -135,6 +136,7 @@ export default function Posts({ user }: { user: User }) {
   return (
     <>
       <div className='h-screen w-full '>
+        <NavBarComponent/>
         <button onClick={logPosts}>log posts</button>
         <div className='w-full py-8 grid place-items-center border-b-2 border-b-black'>
           <h1>Posts</h1>

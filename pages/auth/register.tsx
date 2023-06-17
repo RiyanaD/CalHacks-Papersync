@@ -27,10 +27,17 @@ export default function Login() {
       password: password,
     })
     console.log('results of signing up: ', data, error)
-    if (!error) {
+    if (!error && data?.user) {
+      // After a successful sign up, insert a new row into the 'users' table
+      await supabase.from('users').insert({
+        user_id: data.user.id,
+        name: null,
+        organization: null,
+        biography: null
+      })
       router.push('/home')
     } else {
-      setErrorMsg(error.message)
+      setErrorMsg(error!.message)
     }
   }
 
