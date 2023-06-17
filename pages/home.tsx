@@ -33,10 +33,10 @@ export default function Home({ user }: { user: User }) {
         id: Number(post.post_id),
         created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
         title: post.title,
-        authors: post.user_id, // Assuming user_id is the author here
+        authors: post.authors, // Assuming user_id is the author here
         content: post.content,
         pdf: '', // Assuming there is no pdf field in the fetched data
-        embedding: [post.likes] // Assuming likes is the embedding field
+        embedding: post.embedding // Assuming likes is the embedding field
       }))
       setPosts(formattedData)
     }
@@ -47,10 +47,10 @@ export default function Home({ user }: { user: User }) {
       <div>
 
         {posts && posts.map((post, index) => (
-          <div key={post.id}>
-            <h2>{post.title}</h2>
-            <h3>{post.authors}</h3>
-            <p>{post.content}</p>
+          <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
+            <h2 style={{margin: '0 0 10px 0'}}>{post.title}</h2>
+            <h3 style={{margin: '0 0 10px 0'}}>Author: {post.authors}</h3>
+            <p style={{margin: '0 0 10px 0'}}>{post.content}</p>
             <a href={post.pdf}>View PDF</a>
             {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
             <p>{post.embedding.join(', ')}</p>
