@@ -4,6 +4,7 @@ import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
+import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 
 type Post = {
   id: number,
@@ -46,6 +47,8 @@ export default function Home({ user }: { user: User }) {
   return (
     <>
       <div>
+        <NavBarComponent />
+
 
         {posts && posts.map((post, index) => (
           <div key={post.id} style={{border: '1px solid #ccc', margin: '10px 0', padding: '10px'}}>
