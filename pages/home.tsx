@@ -3,6 +3,8 @@ import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
+import { GetServerSidePropsContext } from 'next'
+import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 
 type Post = {
   id: number,
@@ -49,7 +51,8 @@ export default function Home({ user }: { user: User }) {
           background-color: black;
         }
       `}</style>
-
+      <div>
+        <NavBarComponent />
         <div className={styles.container}>
           {/* nav bar */}
           {posts && posts.map((post, index) => (
@@ -63,6 +66,7 @@ export default function Home({ user }: { user: User }) {
           </div>
           ))}
         </div>
+      </div>
     </>
   )
 }

@@ -11,7 +11,7 @@ import logo from "../public/logo.png"
 const NavBarComponent = () => {
     return (
 
-    <div className="w-[1280px] h-[75px] relative">
+    <div className="w-full h-[75px] relative"  style={{ backgroundColor: 'black' }}>
         <a href = "/home">
             <img src={logo.src} alt = "Placeholder" className='max-w-full max-h-full'/>
         </a>
