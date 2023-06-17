@@ -21,7 +21,6 @@ const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhb
   schema: 'public'
 });
 
-// ...
 
 export default function Posts({ initialSession } : {initiailSession: any}) {
   const [title, setTitle] = useState('');
