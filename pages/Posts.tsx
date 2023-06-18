@@ -18,12 +18,10 @@ interface Post {
 }
 
 // Initialize Supabase client
-const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnc3FybG9kZGlia2dmYmJpaHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODcwMTk4NDksImV4cCI6MjAwMjU5NTg0OX0.dIjB8bcDtniKGy54YC1ZYhvvFmvRB7igDJAZheYCRN0', {
-  schema: 'public'
-});
+const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnc3FybG9kZGlia2dmYmJpaHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODcwMTk4NDksImV4cCI6MjAwMjU5NTg0OX0.dIjB8bcDtniKGy54YC1ZYhvvFmvRB7igDJAZheYCRN0');
 
 
-export default function Posts({ initialSession } : {initiailSession: any}) {
+export default function Posts({ initialSession } : {initialSession: any}) {
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState<string[]>(['']);
   const [abstract, setAbstract] = useState('');
@@ -50,14 +48,6 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     setAuthors(inputAuthors);
   };
 
-  const { data, error } = await supabase
-    .storage
-    .from('avatars')
-    .upload('public/avatar1.png', avatarFile, {
-      cacheControl: '3600',
-      upsert: false
-    })
-
   const handlePDFChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPDF(e.target.value);
   };
@@ -74,12 +64,12 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     }
 
     const post: Post = {
-      //created_at: created_at,
+      created_at: created_at,
       title: title,
       authors: authors,
       abstract: abstract,
       pdf: pdf,
-      //embedding: embedding,
+      embedding: embedding,
       poster_id: initialSession.user.id,
     };
     // Perform further actions with the post object
