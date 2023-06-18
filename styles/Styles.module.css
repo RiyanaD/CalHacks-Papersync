@@ -1,33 +1,99 @@
-
-
 .container {
-    background-color: black;
-  }
-  
-  .post {
-    
-    background-color: #222;
-    border-radius: 8px;
-    margin: 10px 0;
-    padding: 10px;
-    color: white;
-  }
-  
-  .title {
-    margin: 0 0 10px 0;
-    font-size: 24px;
-  }
-  
-  .author {
-    margin: 0 0 10px 0;
-    font-size: 10px;
-  }
-  
-  .content {
-    margin: 0 0 10px 0;
-  }
-  
-  .link {
-    color: white;
-  }
-  
+  background-color: black;
+  width: 65%;
+  margin: 0 auto;
+}
+
+.post {
+  background-color: #222;
+  border-radius: 8px;
+  margin: 30px 0;
+  padding: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.author {
+  margin: 0;
+  font-size: 10px;
+}
+
+.content {
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  position: relative;
+  width: 138px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0; /* Set the desired top and bottom margin */
+
+  background: #6F7DFF;
+  color: #2C3163;
+  font-weight: bold;
+  border-radius: 12px;
+}
+
+.button {
+  position: relative;
+  width: 138px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0; /* Set the desired top and bottom margin */
+
+  background: #67B7F1;
+  color: #25455B;
+  font-weight: bold;
+  border-radius: 12px;
+}
+
+.image {
+  width: 175px;
+  height: 175px;
+  object-fit: cover;
+  overflow: hidden;
+  margin-left: 10px; /* Adjust the left margin as needed */
+  margin-right: 10px; /* Adjust the right margin as needed */
+}
+
+.details {
+  margin-left: 50px; /* Adjust the left margin as needed */
+  flex-grow: 1;
+  width: 500px; /* Set the desired width */
+  height: 250px; /* Set the desired height */
+}
+
+.actions {
+  color: #2C3163;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  margin-left: 150px; /* Adjust the left margin as needed */
+  margin-right: 10px; /* Adjust the right margin as needed */
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.actions a,
+.actions button {
+  margin-left: 5px;
+}
+
+.likes {
+  margin-left: 10px;
+}
