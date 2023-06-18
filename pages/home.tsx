@@ -11,6 +11,7 @@ import preview2 from "/public/previews/preview2.png"
 import preview3 from "/public/previews/preview3.png"
 import preview4 from "/public/previews/preview4.png"
 import preview5 from "/public/previews/preview5.png"
+import Link from 'next/link';
 
 type Post = {
   id: number,
@@ -21,7 +22,7 @@ type Post = {
   pdf: string,
   embedding: number[],
   likes: number,
-  imagePath: string
+  retention_score: number
 }
 
 export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
@@ -50,7 +51,6 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         pdf: '', // Assuming there is no pdf field in the fetched data
         embedding: post.embedding, // Assuming likes is the embedding field
         likes: post.likes,
-        imagePath: post.imagePath
       }))
       setPosts(formattedData)
     }
@@ -118,16 +118,17 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         <div className={styles.container}>
           {/* nav bar */}
           {posts && posts.map((post, index) => (
-          <div key={post.id} className={styles.post}>
-            {/* <img src={eval(`preview${(index % 5) + 1}`).src} alt={`Preview ${index + 1}`} /> */}
-            <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
-            <h2 className={styles.title}>{post.title}</h2>
-            <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-            <p className={styles.abstract}>{post.abstract}</p>
-            <a href={post.pdf} className={styles.link}>View PDF</a>
-            <button onClick={() => likePost(post.id)}>Like</button>
-            <p>{post.likes} likes</p>
-          </div>
+            <div key={post.id} className={styles.post}>
+              <Link href={`/${post.id}`}>
+                <h2 className={styles.title}>{post.title}</h2>
+              </Link>
+              <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
+              <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
+              <p className={styles.abstract}>{post.abstract}</p>
+              <a href={post.pdf} className={styles.link}>View PDF</a>
+              <button onClick={() => likePost(post.id)}>Like</button>
+              <p>{post.likes} likes</p>
+            </div>
           ))}
         </div>
       </div>
@@ -194,13 +195,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .slice(0, 5)
     .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
 
-    const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
-
+    const scoredPosts = closestPosts.map((post) => {
+      const score = Math.log(post.likes + 3) * post.retention_score;
+      return { ...post, score };
+    });
+  
+    const sortedByScore = scoredPosts.sort((a, b) => b.score - a.score);
+  
     return {
       props: {
         initialSession: session,
         user: session.user,
-        closestPosts: sortedByLikes
+        closestPosts: sortedByScore,
       },
-    }
-}
+    };
+  };
