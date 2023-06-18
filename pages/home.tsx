@@ -6,6 +6,7 @@ import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 import * as tf from '@tensorflow/tfjs';
+import Link from 'next/link';
 
 type Post = {
   id: number,
@@ -26,28 +27,6 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
   useEffect(() => {
     setPosts(closestPosts)
   }, [])
-
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-  
-    if (error) console.log('Error fetching posts: ', error)
-    else {
-      console.log(data);
-      const formattedData: Post[] = data.map(post => ({
-        id: Number(post.id),
-        created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
-        title: post.title,
-        authors: post.authors, // Assuming user_id is the author here
-        abstract: post.abstract,
-        pdf: '', // Assuming there is no pdf field in the fetched data
-        embedding: post.embedding, // Assuming likes is the embedding field
-        likes: post.likes
-      }))
-      setPosts(formattedData)
-    }
-  }
 
   const likePost = useCallback(async (postId : number) => {
     // Check if this user has already liked this post
@@ -110,14 +89,16 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         <div className={styles.container}>
           {/* nav bar */}
           {posts && posts.map((post, index) => (
-          <div key={post.id} className={styles.post}>
-            <h2 className={styles.title}>{post.title}</h2>
-            <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-            <p className={styles.abstract}>{post.abstract}</p>
-            <a href={post.pdf} className={styles.link}>View PDF</a>
-            <button onClick={() => likePost(post.id)}>Like</button>
-            <p>{post.likes} likes</p>
-          </div>
+            <div key={post.id} className={styles.post}>
+              <Link href={`/${post.id}`}>
+                <h2 className={styles.title}>{post.title}</h2>
+              </Link>
+              <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
+              <p className={styles.abstract}>{post.abstract}</p>
+              <a href={post.pdf} className={styles.link}>View PDF</a>
+              <button onClick={() => likePost(post.id)}>Like</button>
+              <p>{post.likes} likes</p>
+            </div>
           ))}
         </div>
       </div>
