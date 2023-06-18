@@ -49,31 +49,31 @@ export default function Posts({ initialSession } : {initialSession: any}) {
   };
 
   const handlePDFChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    setPDF(e.target.value);
-    // let file;
+    // setPDF(e.target.value);
+    let file;
 
-    // if(e.target.files){
-    //   file = e.target.files[0];
-    //   console.log("Got the file") 
-    // }
+    if(e.target.files){
+      file = e.target.files[0];
+      console.log("Got the file") 
+    }
 
-    // if(file){
-    //   console.log(file)
-    //   const { data, error } = await supabase
-    //   .storage
-    //   .from('pdfs')
-    //   .upload(user.id , {
-    //     cacheControl: '3600',
-    //     upsert: false
-    //   }); 
+    if(file){
+      console.log(file)
+      const { data, error } = await supabase
+      .storage
+      .from('public/pdfs')
+      .upload('file_path', file, {
+        cacheControl: '3600',
+        upsert: false
+      }); 
 
-    //   if(error){
-    //     console.error("File upload error")
-    //   }
-    //   else{
-    //     console.error("File upload success")
-    //   }
-    // }
+      if(error){
+        console.error("File upload error")
+      }
+      else{
+        console.error("File upload success")
+      }
+    }
 
 
   };
@@ -191,7 +191,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             type="file"
             id="pdf"
             value={pdf}
-            accept=".pdf"
+            accept="application/pdf"
             onChange={(e) => {
               handlePDFChange(e);
             }}
