@@ -5,14 +5,14 @@ import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
+import axios from 'axios'
 
 interface Post {
-  created_at: Date;
   title: string;
   authors:  string[];
-  abstract: string;
+  content: string;
   pdf: string;
-  embedding: number[];
+  embedding: number[] | null;
   poster_id: any;
 
 }
@@ -24,11 +24,10 @@ const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhb
 export default function Posts({ initialSession } : {initialSession: any}) {
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState<string[]>(['']);
-  const [abstract, setAbstract] = useState('');
-  const [created_at, setCreatedAt] = useState(new Date());
-  const [embedding, setEmbedding] = useState<number[]>([]);
+  const [content, setContent] = useState('');
   const [pdf, setPDF] = useState('');
   const [poster_id, setPosterID] = useState('');
+  const [summary, setSummary] = useState('');
   
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -40,13 +39,15 @@ export default function Posts({ initialSession } : {initialSession: any}) {
   }
 
   const handleAbstractChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setAbstract(e.target.value);
+    setContent(e.target.value);
   };
 
   const handleAuthorsChange = (e: ChangeEvent<HTMLInputElement>) => {
     const inputAuthors = e.target.value.split(','); // Assuming the authors are separated by commas
     setAuthors(inputAuthors);
   };
+
+  
 
   const handlePDFChange = async (e: ChangeEvent<HTMLInputElement>) => {
     // setPDF(e.target.value);
@@ -57,23 +58,32 @@ export default function Posts({ initialSession } : {initialSession: any}) {
       console.log("Got the file") 
     }
 
-    if(file){
-      console.log(file)
-      const { data, error } = await supabase
-      .storage
-      .from('public/pdfs')
-      .upload('file_path', file, {
-        cacheControl: '3600',
-        upsert: false
-      }); 
+  
+    // if(file){
+    //   console.log(file)
+    //   const { data, error } = await supabase
+    //   .storage
+    //   .from('pdfs')
+    //   .upload('public/filename.pdf', file, {
+    //     cacheControl: '3600',
+    //     upsert: false 
+    //   }); 
 
-      if(error){
-        console.error("File upload error")
-      }
-      else{
-        console.error("File upload success")
-      }
-    }
+    //   if(error){
+    //     console.error("File upload error")
+    //   }
+    //   else{
+    //     console.error("File upload success")
+    //   }
+    // }
+      // const { data, error } = await supabase.storage.from('pdfs').upload('filename.pdf', file as File)
+      // if (error) {
+      // // Handle error
+      //   console.error("File upload error")
+      // } else {
+      // // Handle success
+      //   console.log("Success")
+      // }
 
 
   };
@@ -84,18 +94,70 @@ export default function Posts({ initialSession } : {initialSession: any}) {
     e.preventDefault();
 
     // Perform validation if needed
-    if (!title || !abstract) {
-      console.log('Invalid post. Title and abstract are required.');
+    if (!title || !content) {
+      console.log('Invalid post. Title and content are required.');
       return;
     }
+   
+
+    const sentencesResponse = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+          model: 'gpt-4',
+          messages: [
+              {
+                  role: "system",
+                  content: "This is a chat that a user had with a chatbot. Describe the user in as many descriptive sentences as you can, but do so from the first-person point of view. For example, I am very interested in video games. could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. End every sentence with a newline."
+              },
+              {
+                  role: "user",
+                  content: content
+              }
+          ],
+          max_tokens: 200,
+          n: 1,
+          stop: null,
+          temperature: 0,
+      },
+      {
+          headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer `  + process.env.NEXT_PUBLIC_API_KEY,
+          },
+      }
+    );
+
+
+
+    setSummary(sentencesResponse.data.choices[0].message.content)
+
+    const data = sentencesResponse.data.choices[0].message.content;
+    const newData = data.split('\n')
+
+    
+    const response = await axios.post(
+        'https://api.openai.com/v1/embeddings',
+        {
+            model: 'text-embedding-ada-002',
+            input: newData,
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ` + process.env.NEXT_PUBLIC_API_KEY,
+            },
+        },
+    );
+    
+    const embeddings = response.data.data[0].embedding; // hypothetical response format
+    
 
     const post: Post = {
-      created_at: created_at,
       title: title,
       authors: authors,
-      abstract: abstract,
+      content: content,
       pdf: pdf,
-      embedding: embedding,
+      embedding: embeddings,
       poster_id: initialSession.user.id,
     };
     // Perform further actions with the post object
@@ -132,14 +194,14 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             id="title"
             value={title}
             onChange={handleTitleChange}
-            className="text-center"
             style={{
               marginLeft: "auto",
               marginRight: "auto",
               borderRadius: "10px",
               height: "54.98px",
               background: "#1E1E1E",
-              width: "100%"
+              width: "100%",
+              padding: "10px"
             }}
           />
         </div>
@@ -153,14 +215,14 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             id="authors"
             value={authors}
             onChange={handleAuthorsChange}
-            className="text-center"
             style={{
               marginLeft: "auto",
               marginRight: "auto",
               borderRadius: "10px",
               height: "54.98px",
               background: "#1E1E1E",
-              width: "100%"
+              width: "100%",
+              padding: "10px"
             }}
           />
         </div>
@@ -171,16 +233,16 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           </label>
           <textarea
             id="abstract"
-            value={abstract}
+            value={content}
             onChange={handleAbstractChange}
-            className="text-center"
             style={{
               marginLeft: "auto",
               marginRight: "auto",
               borderRadius: "10px",
               height: "295.98px",
               background: "#1E1E1E",
-              width: "100%"
+              width: "100%",
+              padding: "10px"
             }}
           ></textarea>
         </div>

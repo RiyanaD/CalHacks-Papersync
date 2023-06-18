@@ -5,6 +5,7 @@ import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
+import { Document, Page } from 'react-pdf'; 
 
 type Post = {
   id: number,
@@ -117,8 +118,6 @@ export default function Home({ user }: { user: User }) {
             <a href={post.pdf} className={styles.link}>View PDF</a>
             <button onClick={() => likePost(post.id)}>Like</button>
             <p>{post.likes} likes</p>
-            {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
-            {post.embedding && <p>{post.embedding.join(', ')}</p>}
           </div>
           ))}
         </div>
