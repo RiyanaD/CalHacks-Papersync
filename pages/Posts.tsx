@@ -16,6 +16,8 @@ interface Post {
   pdf: string;
   embedding: number[] | null;
   poster_id: any;
+  likes: number;
+  retention_score: number;
   summary: string;
 }
 
@@ -199,6 +201,8 @@ export default function Posts({ initialSession } : {initialSession: any}) {
         content: content,
         pdf: pdf,
         embedding: embeddings,
+        likes: 0,
+        retention_score: 0,
         poster_id: initialSession.user.id,
         summary: sentencesResponse.data.choices[0].message.content
       };
