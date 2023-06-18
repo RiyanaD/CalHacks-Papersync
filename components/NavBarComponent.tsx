@@ -5,7 +5,7 @@ const NavBarComponent = () => {
     return (
 
     <div className="w-full h-[75px] relative"  style={{ backgroundColor: 'black' }}>
-        <a href = "/home">
+        <a href = "/home" style={{position: 'relative', left: 50, top: 5}}>
             <img src={logo.src} alt = "Placeholder" className='max-w-full max-h-full'/>
         </a>
         <a href ="/Posts" className="absolute left-[222px] top-[30px] text-xl text-left text-white">Publish</a>

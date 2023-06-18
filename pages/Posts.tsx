@@ -50,7 +50,6 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     setAuthors(inputAuthors);
   };
 
-  const avatarFile = event.target.files[0]
   const { data, error } = await supabase
     .storage
     .from('avatars')

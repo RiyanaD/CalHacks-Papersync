@@ -118,6 +118,15 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
 
   }
 
+  const handleInChange = (e: any) => {
+    setUpdatedField(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  
+    if (e.target.name === 'biography') {
+      const lineCount = (e.target.value.match(/\n/g) || []).length + 1; // +1 for the current line
+      e.target.rows = lineCount;
+    }
+  }
+
   return (
     <>
     <style jsx global>{`
@@ -129,32 +138,30 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
 
       <div style={{color:"white", marginLeft: "20%", marginRight: "20%", marginTop: "20px"}}>
       {editing ? (
-        <>
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              name="name"
-              style={{ background: "grey", color: "white" }}
-              onChange={handleInputChange}
-              defaultValue={userProfile?.name}
-            />
+          <>
+          <div style={{ display: "flex", flexWrap: "wrap", flexDirection: "row", backgroundColor: 'black', color: 'white' }}>
+            <div style={{ width: "200px", height: "200px", borderRadius: "50%", background: "grey", flexShrink: 0 }}></div>
+            <div style={{ maxWidth: "700px", flexShrink: 0 }}>
+              <input
+                name="name"
+                style={{ fontSize: "48px", overflowWrap: "break-word", backgroundColor: 'black', color: 'white', outline: 'none' }}
+                onChange={handleInputChange}
+                defaultValue={userProfile?.name}
+              />
+              <input
+                name="organization"
+                style={{ fontSize: "30px", overflowWrap: "break-word", backgroundColor: 'black', color: 'white', outline: 'none' }}
+                onChange={handleInputChange}
+                defaultValue={userProfile?.organization}
+              />
+              <textarea
+                name="biography"
+                style={{ fontSize: "20px", overflowWrap: "break-word", backgroundColor: 'black', color: 'white', border: 'none', resize: 'none', display: 'block', width: '100%', outline: 'none', height: 250 }}
+                onChange={handleInChange}
+                defaultValue={userProfile?.biography}
+              />
+            </div>
           </div>
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              name="organization"
-              style={{ background: "grey", color: "white" }}
-              onChange={handleInputChange}
-              defaultValue={userProfile?.organization}
-            />
-          </div>
-          <div style={{ marginBottom: "10px" }}>
-            <input
-              name="biography"
-              style={{ background: "grey", color: "white" }}
-              onChange={handleInputChange}
-              defaultValue={userProfile?.biography}
-            />
-          </div>
-
           <button style={{ background: "#1E1E1E" }} onClick={updateProfile}>Save</button>
           <button style={{ background: "#1E1E1E" }} onClick={() => setEditing(false)}>Cancel</button>
         </>
@@ -162,10 +169,10 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
         <>
           <div style={{ display: "flex", flexWrap: "wrap" }}>
             <div style={{ width: "200px", height: "200px", borderRadius: "50%", background: "grey", flexShrink: 0 }}></div>
-            <div style={{ marginLeft: "40px", maxWidth: "700px", flexShrink: 0 }}>
+            <div style={{ maxWidth: "700px", flexShrink: 0 }}>
               <h2 style={{ fontSize: "48px", overflowWrap: "break-word" }}>{userProfile?.name}</h2>
               <h3 style={{ fontSize: "30px", overflowWrap: "break-word" }}>{userProfile?.organization}</h3>
-              <p style={{ fontSize: "20px", overflowWrap: "break-word" }}>{userProfile?.biography}</p>
+              <p style={{ fontSize: "20px", overflowWrap: "break-word", height: 250, width: '100%' }}>{userProfile?.biography}</p>
               <button onClick={() => setEditing(true)}>Edit</button>
             </div>
           </div>
