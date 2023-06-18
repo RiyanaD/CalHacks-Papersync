@@ -16,7 +16,8 @@ type Post = {
   abstract: string,
   pdf: string,
   embedding: number[],
-  likes: number
+  likes: number,
+  retention_score: number
 }
 
 export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
@@ -165,13 +166,18 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     .slice(0, 5)
     .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
 
-    const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
-
+    const scoredPosts = closestPosts.map((post) => {
+      const score = Math.log(post.likes + 3) * post.retention_score;
+      return { ...post, score };
+    });
+  
+    const sortedByScore = scoredPosts.sort((a, b) => b.score - a.score);
+  
     return {
       props: {
         initialSession: session,
         user: session.user,
-        closestPosts: sortedByLikes
+        closestPosts: sortedByScore,
       },
-    }
-}
+    };
+  };

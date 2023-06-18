@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import NavBarComponent from '@/components/NavBarComponent'
+import { GetServerSidePropsContext } from 'next'
+import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 
 // Define your post type
 type PostType = {
@@ -15,14 +17,65 @@ type PostType = {
   likes: number;
 };
 
-export default function PostPage() {
+type Profile = {
+    id?: number;
+    user_id?: string;
+    name?: string;
+    organization?: string;
+    biography?: string;
+    citations?: number;
+}
+
+export default function PostPage({ user, profile }: { user: User, profile: Profile }) {
   const router = useRouter();
   const { postId } = router.query;
   
   // Set the post type in useState
   const [post, setPost] = useState<PostType | null>(null);
+  const [startTime, setStartTime] = useState<Date | null>(null);
   
   const supabase = useSupabaseClient()
+
+  useEffect(() => {
+    const startTime = new Date(); // set the startTime when the component mounts
+
+    const incrementRetentionScore = async () => {
+      // Get the current post data
+      const { data: postData, error: fetchError } = await supabase
+        .from('posts')
+        .select('retention_score')
+        .eq('id', postId);
+
+      if (fetchError) {
+        console.log('Error fetching post data: ', fetchError);
+        return;
+      }
+
+      // Calculate the new retention score
+      const currentScore = postData?.[0]?.retention_score || 0;
+      const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000) *  ( 2 / Math.log(profile.citations! + 3) ); // calculate time spent in seconds
+      const newScore = currentScore + timeSpent;
+
+      // Update the retention score
+      const { error: updateError } = await supabase
+        .from('posts')
+        .update({ retention_score: newScore })
+        .eq('id', postId);
+      
+      if (updateError) {
+        console.log('Error updating retention score: ', updateError);
+      }
+    };
+
+    // Set up an interval to update the retention_score every 5 seconds
+    const intervalId = setInterval(incrementRetentionScore, 5000);
+    
+    // Cleanup function to clear the interval and do a final update when the component unmounts
+    return () => {
+      clearInterval(intervalId);
+      incrementRetentionScore();
+    };
+  }, [postId, supabase]);
 
   useEffect(() => {
     if(postId) {
@@ -80,3 +133,43 @@ export default function PostPage() {
     </div>
   );
 }
+
+export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+    // Create authenticated Supabase Client
+    const supabase = createServerSupabaseClient(ctx)
+    
+    // Check if we have a session
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+  
+    if (!session)
+      return {
+        redirect: {
+          destination: '/auth/signin',
+          permanent: false,
+        },
+      }
+  
+    const { data: profileData, error: profileError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('user_id', session.user.id)
+
+    if (profileError || !profileData) {
+    console.log('Error fetching profile: ', profileError) // Add log here
+    return {
+        notFound: true,
+    }
+    }
+  
+    const profile = profileData[0] || null;
+  
+    return {
+      props: {
+        initialSession: session,
+        user: session.user,
+        profile,
+      },
+    }
+  }
