@@ -114,7 +114,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           messages: [
               {
                   role: "system",
-                  content: "You are a bot that determines the validity of any given research paper that the user tries to upload. Look for pornographic, informal, or anything that can be deemed as misinfomartion. You are to say 'yes' or 'no' to the user when they try to submit their paper"
+                  content: "You are a bot that determines the validity of any given research paper that the user tries to upload. First look for obvious red flags such as pornographic, informal, or anything that can be deemed as misinfomartion. Second look for anything that isn't formatted like a reseacrh paper. Do not accept all types of text and consider the length of the text and make sure to accept a paper that follows a research paper style. You are to say 'yes' or 'no' to the user when they try to submit their paper."
               },
               {
                   role: "user",
