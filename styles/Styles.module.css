@@ -40,6 +40,8 @@
   margin: 10px 0; /* Set the desired top and bottom margin */
 
   background: #6F7DFF;
+  color: #2C3163;
+  font-weight: bold;
   border-radius: 12px;
 }
 
@@ -53,6 +55,8 @@
   margin: 10px 0; /* Set the desired top and bottom margin */
 
   background: #67B7F1;
+  color: #25455B;
+  font-weight: bold;
   border-radius: 12px;
 }
 
