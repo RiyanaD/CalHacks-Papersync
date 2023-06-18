@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { AiFillHeart } from 'react-icons/ai';
 
 
+
 type Post = {
   id: number,
   created_at: string,
@@ -78,7 +79,12 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
           if (likesError) console.log('Error inserting like: ', likesError)
           else {
             console.log('Successfully liked post');
-            // You might want to manually update the closestPosts state to reflect the new like
+            // Manually update the posts state to reflect the new like
+            setPosts(prevPosts =>
+              prevPosts.map(post =>
+                post.id === postId ? { ...post, likes: post.likes + 1 } : post
+              )
+            );
           }
         }
       }
@@ -118,7 +124,7 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
               <div className={styles.actions}>
                 <a target = "_blank" href={post.pdf} className={styles.link}>View PDF</a>
                 <button onClick={() => likePost(post.id)} className={styles.button}>
-                  <AiFillHeart size={16} style={{ color: "#2C3163", marginRight: '5px' }} /> Likes: {post.likes}
+                  <AiFillHeart size={16} style={{ color: "#2C3163", marginRight: '5px' }} /> {post.likes}
                 </button>
               </div>
             </div>
@@ -185,7 +191,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     // Sort the posts by similarity and take the first 100
     const closestPosts = similarities
     .sort((a, b) => b.similarity - a.similarity) // Note that we sort in descending order
-    .slice(0, 5)
+    .slice(0, 10)
     .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
 
     const scoredPosts = closestPosts.map((post) => {

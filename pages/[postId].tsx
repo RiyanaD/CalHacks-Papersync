@@ -5,6 +5,7 @@ import NavBarComponent from '@/components/NavBarComponent'
 import { GetServerSidePropsContext } from 'next'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import styles from "../styles/Styles.module.css"
+import { AiFillHeart } from 'react-icons/ai';
 
 // Define your post type
 type PostType = {
@@ -37,54 +38,58 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
   
   const supabase = useSupabaseClient()
 
-  const likePost = useCallback(async (postId : number) => {
-    // Check if this user has already liked this post
+  const [likes, setLikes] = useState(0);
+
+
+  const likePost = useCallback(async (postId: number) => {
     const { data: likesData, error: likesError } = await supabase
       .from('likes')
       .select('*')
       .eq('user_id', user.id)
       .eq('post_id', postId);
-  
-    if (likesError) console.log('Error fetching likes: ', likesError)
-    else if (likesData.length > 0) {
+
+    if (likesError) {
+      console.log('Error fetching likes: ', likesError);
+    } else if (likesData && likesData.length > 0) {
       console.log('User has already liked this post');
     } else {
-      // Fetch the current number of likes for this post
       const { data: postData, error: postError } = await supabase
         .from('posts')
         .select('likes')
         .eq('id', postId);
-  
-      if (postError) console.log('Error fetching post: ', postError)
-      else if (postData.length === 0) {
+
+      if (postError) {
+        console.log('Error fetching post: ', postError);
+      } else if (!postData || postData.length === 0) {
         console.log('No post found with this id');
       } else {
         const newLikes = postData[0].likes + 1;
-  
-        // Increment the likes for this post
         const { data: updateData, error: updateError } = await supabase
           .from('posts')
           .update({ likes: newLikes })
           .eq('id', postId);
-  
-        if (updateError) console.log('Error updating post: ', updateError)
-        else {
-          // Add a row to the likes table
+
+        if (updateError) {
+          console.log('Error updating post: ', updateError);
+        } else {
           const { data: likesData, error: likesError } = await supabase
             .from('likes')
             .insert([
-              { user_id: user.id, post_id: postId }
+              { user_id: user.id, post_id: postId },
             ]);
-  
-          if (likesError) console.log('Error inserting like: ', likesError)
-          else {
+
+          if (likesError) {
+            console.log('Error inserting like: ', likesError);
+          } else {
             console.log('Successfully liked post');
-            // You might want to manually update the closestPosts state to reflect the new like
+            setLikes(newLikes);  // Update the likes state here
           }
         }
       }
     }
   }, [supabase, user.id]);
+
+
   useEffect(() => {
     const startTime = new Date(); // set the startTime when the component mounts
 
@@ -128,21 +133,21 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
 
   useEffect(() => {
     if(postId) {
-      // fetch data for the postId
       const fetchPost = async () => {
         const { data: post, error } = await supabase
           .from('posts')
           .select('*')
           .eq('id', postId)
-
+  
         if(error) {
           console.log('Error fetching post: ', error)
         } else if(post) {
-          setPost(post[0])
+          setPost(post[0]);
+          setLikes(post[0].likes); // Set the likes state here
         }
       }
-
-      fetchPost()
+  
+      fetchPost();
     }
   }, [postId, supabase])
 
@@ -175,7 +180,9 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
           <p style={{fontSize: '1.2em', width: '70%', paddingTop: '30px', paddingBottom: '30px'}}>{post.content}</p>
           <a href={post.pdf} className={styles.link}>View PDF</a>
           
-          <button className={styles.button}>Likes: {post.likes}</button>
+          <button onClick={() => likePost(post.id)} className={styles.button}>
+            <AiFillHeart size={16} style={{ color: "#2C3163", marginRight: '5px' }} /> {likes}
+          </button>
         </div>
       ) : (
         'Loading...'
