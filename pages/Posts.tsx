@@ -279,7 +279,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
         
         <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
           <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
-            Abstract
+            Content
           </label>
           <textarea
             id="abstract"
