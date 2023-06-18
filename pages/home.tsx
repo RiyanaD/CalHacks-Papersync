@@ -7,6 +7,12 @@ import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 import { Document, Page } from 'react-pdf'; 
 import * as tf from '@tensorflow/tfjs';
+import preview1 from "/public/previews/preview1.png"
+import preview2 from "/public/previews/preview2.png"
+import preview3 from "/public/previews/preview3.png"
+import preview4 from "/public/previews/preview4.png"
+import preview5 from "/public/previews/preview5.png"
+import Link from 'next/link';
 
 type Post = {
   id: number,
@@ -16,7 +22,8 @@ type Post = {
   abstract: string,
   pdf: string,
   embedding: number[],
-  likes: number
+  likes: number,
+  retention_score: number
 }
 
 export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
@@ -25,8 +32,7 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
 
 
   useEffect(() => {
-    fetchPosts()
-    console.log(closestPosts)
+    setPosts(closestPosts)
   }, [])
 
   const fetchPosts = async () => {
@@ -45,7 +51,7 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         abstract: post.abstract,
         pdf: '', // Assuming there is no pdf field in the fetched data
         embedding: post.embedding, // Assuming likes is the embedding field
-        likes: post.likes
+        likes: post.likes,
       }))
       setPosts(formattedData)
     }
@@ -93,15 +99,16 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
           if (likesError) console.log('Error inserting like: ', likesError)
           else {
             console.log('Successfully liked post');
-            fetchPosts();
+            // You might want to manually update the closestPosts state to reflect the new like
           }
         }
       }
     }
-  }, [fetchPosts, supabase, user.id]);
-
+  }, [supabase, user.id]);
+  const previews = [preview1, preview2, preview3, preview4, preview5];
+  // {loadImagePath(post.id)}
   return (
-      <>
+    <>
       <style jsx global>{`
         body {
           background-color: black;
@@ -112,19 +119,28 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         <div className={styles.container}>
           {/* nav bar */}
           {posts && posts.map((post, index) => (
-          <div key={post.id} className={styles.post}>
-            <h2 className={styles.title}>{post.title}</h2>
-            <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-            <p className={styles.abstract}>{post.abstract}</p>
-            <a href={post.pdf} className={styles.link}>View PDF</a>
-            <button onClick={() => likePost(post.id)}>Like</button>
-            <p>{post.likes} likes</p>
-          </div>
+            <div key={post.id} className={styles.post}>
+              <Link href={`/${post.id}`}>
+                <div className={styles.content}>
+                  <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
+                  <div className={styles.details}>
+                    <h2 className={styles.title}>{post.title}</h2>
+                    <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
+                    <p className={styles.abstract}>{post.abstract}</p>
+                  </div>
+                </div>
+              </Link>
+              <div className={styles.actions}>
+                <a target = "_blank" href={post.pdf} className={styles.link}>View PDF</a>
+                <button onClick={() => likePost(post.id)} className={styles.button}>Like</button>
+                <p className={styles.likes}>{post.likes} likes</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
     </>
-  )
+  );  
 }
 
 // A function to calculate the cosine similarity between two embeddings
@@ -165,7 +181,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     // Fetch the post embeddings
     const { data: postEmbeddingsData } = await supabase
     .from('posts')
-    .select('id, embedding, likes');
+    .select('*');
 
     // For each post, calculate its maximum cosine similarity to the user embeddings
     const similarities = [];
@@ -183,16 +199,21 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     // Sort the posts by similarity and take the first 100
     const closestPosts = similarities
     .sort((a, b) => b.similarity - a.similarity) // Note that we sort in descending order
-    .slice(0, 100)
+    .slice(0, 5)
     .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
 
-    const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
-
+    const scoredPosts = closestPosts.map((post) => {
+      const score = Math.log(post.likes + 3) * post.retention_score;
+      return { ...post, score };
+    });
+  
+    const sortedByScore = scoredPosts.sort((a, b) => b.score - a.score);
+  
     return {
       props: {
         initialSession: session,
         user: session.user,
-        closestPosts: closestPosts
+        closestPosts: sortedByScore,
       },
-    }
-}
+    };
+  };

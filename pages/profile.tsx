@@ -56,7 +56,7 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
             messages: [
                 {
                     role: "system",
-                    content: "This is a user's biography. Only describe the user's research interests, but do so from the first-person point of view. For example, \"I am very interested in computer science.\" could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. Try not put descriptions that are too similar to each other or too vague. End every sentence with a newline."
+                    content: "This is a user's biography. Only describe the user's research interests, but do so from the first-person point of view. For example, \"I am very interested in computer science.\" could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. Try not put descriptions that are too similar to each other or too vague. You must end every sentence with a newline."
                 },
                 {
                     role: "user",
@@ -79,6 +79,7 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
     const bruh = sentencesResponse.data.choices[0].message.content;
     const sentences = bruh.split('\n');
     
+    console.log(sentences)
     for (const sentence of sentences) {
         const response = await axios.post(
             'https://api.openai.com/v1/embeddings',
