@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
-import axios from 'axios';
+import * as tf from '@tensorflow/tfjs';
 
 type Post = {
   id: number,
   created_at: string,
   title: string,
   authors: string[],
-  content: string,
+  abstract: string,
   pdf: string,
   embedding: number[],
-  summary: string
+  likes: number
 }
 
-export default function Home({ user }: { user: User }) {
+export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
   const supabase = useSupabaseClient<Database>()
   const [posts, setPosts] = useState<Post[]>([])
 
+
   useEffect(() => {
-    fetchPosts()
+    setPosts(closestPosts)
   }, [])
 
   const fetchPosts = async () => {
@@ -31,49 +32,71 @@ export default function Home({ user }: { user: User }) {
       .from('posts')
       .select('*')
   
-      const summarizes = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-            model: 'gpt-4',
-            messages: [
-                {
-                    role: "system",
-                    content: "This is a chat that a user had with a chatbot. Describe the user in as many descriptive sentences as you can, but do so from the first-person point of view. For example, I am very interested in video games. could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. End every sentence with a newline."
-                },
-                {
-                    role: "user",
-                    content: posts.content
-                }
-            ],
-            max_tokens: 200,
-            n: 1,
-            stop: null,
-            temperature: 0,
-        },
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer `  + process.env.NEXT_PUBLIC_API_KEY,
-            },
-        }
-      )
-      setSummary(summarizes.data.choices[0].message.content)
-    };
-
     if (error) console.log('Error fetching posts: ', error)
     else {
+      console.log(data);
       const formattedData: Post[] = data.map(post => ({
-        const summarizedContent = await summarize(post.content);
-        id: Number(post.post_id),
+        id: Number(post.id),
         created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
         title: post.title,
         authors: post.authors, // Assuming user_id is the author here
-        content: post.content,
+        abstract: post.abstract,
         pdf: '', // Assuming there is no pdf field in the fetched data
-        embedding: post.embedding // Assuming likes is the embedding field
+        embedding: post.embedding, // Assuming likes is the embedding field
+        likes: post.likes
       }))
       setPosts(formattedData)
     }
+  }
+
+  const likePost = useCallback(async (postId : number) => {
+    // Check if this user has already liked this post
+    const { data: likesData, error: likesError } = await supabase
+      .from('likes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('post_id', postId);
+  
+    if (likesError) console.log('Error fetching likes: ', likesError)
+    else if (likesData.length > 0) {
+      console.log('User has already liked this post');
+    } else {
+      // Fetch the current number of likes for this post
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('likes')
+        .eq('id', postId);
+  
+      if (postError) console.log('Error fetching post: ', postError)
+      else if (postData.length === 0) {
+        console.log('No post found with this id');
+      } else {
+        const newLikes = postData[0].likes + 1;
+  
+        // Increment the likes for this post
+        const { data: updateData, error: updateError } = await supabase
+          .from('posts')
+          .update({ likes: newLikes })
+          .eq('id', postId);
+  
+        if (updateError) console.log('Error updating post: ', updateError)
+        else {
+          // Add a row to the likes table
+          const { data: likesData, error: likesError } = await supabase
+            .from('likes')
+            .insert([
+              { user_id: user.id, post_id: postId }
+            ]);
+  
+          if (likesError) console.log('Error inserting like: ', likesError)
+          else {
+            console.log('Successfully liked post');
+            // You might want to manually update the closestPosts state to reflect the new like
+          }
+        }
+      }
+    }
+  }, [supabase, user.id]);
 
   return (
       <>
@@ -90,17 +113,30 @@ export default function Home({ user }: { user: User }) {
           <div key={post.id} className={styles.post}>
             <h2 className={styles.title}>{post.title}</h2>
             <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-            <p className={styles.content}>{post.content}</p>
-            <p className={styles.content}>{post.summary}</p>
+            <p className={styles.abstract}>{post.abstract}</p>
             <a href={post.pdf} className={styles.link}>View PDF</a>
-            {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
-            {post.embedding && <p>{post.embedding.join(', ')}</p>}
+            <button onClick={() => likePost(post.id)}>Like</button>
+            <p>{post.likes} likes</p>
           </div>
           ))}
         </div>
       </div>
     </>
   )
+}
+
+// A function to calculate the cosine similarity between two embeddings
+async function cosineSimilarity(embedding1: number[], embedding2: number[]): Promise<number> {
+  const a = tf.tensor1d(embedding1);
+  const b = tf.tensor1d(embedding2);
+  
+  const magnitudeA = tf.norm(a);
+  const magnitudeB = tf.norm(b);
+  const dotProduct = tf.sum(tf.mul(a, b));
+  
+  const similarity = tf.div(dotProduct, tf.mul(magnitudeA, magnitudeB));
+
+  return (await similarity.array()) as number; // Assert that the result is a number
 }
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
@@ -119,10 +155,42 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  return {
-    props: {
-      initialSession: session,
-      user: session.user,
-    },
-  }
+    const { data: userEmbeddingsData } = await supabase
+    .from('user_embeddings')
+    .select('*')
+    .eq('user_id', session.user.id);
+
+    // Fetch the post embeddings
+    const { data: postEmbeddingsData } = await supabase
+    .from('posts')
+    .select('*');
+
+    // For each post, calculate its maximum cosine similarity to the user embeddings
+    const similarities = [];
+    for (const post of postEmbeddingsData!) {
+      let maxSimilarity = -Infinity;
+      for (const userEmbedding of userEmbeddingsData!) {
+        const similarity = await cosineSimilarity(userEmbedding.embedding, post.embedding);
+        if (similarity > maxSimilarity) {
+          maxSimilarity = similarity;
+        }
+    }
+    similarities.push({ id: post.id, similarity: maxSimilarity });
+    }
+
+    // Sort the posts by similarity and take the first 100
+    const closestPosts = similarities
+    .sort((a, b) => b.similarity - a.similarity) // Note that we sort in descending order
+    .slice(0, 5)
+    .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
+
+    const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
+
+    return {
+      props: {
+        initialSession: session,
+        user: session.user,
+        closestPosts: sortedByLikes
+      },
+    }
 }

@@ -1,5 +1,3 @@
-import home from './home.tsx'
-
 export default function Home() {
   return (
     <>
