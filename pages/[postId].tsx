@@ -1,9 +1,10 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import NavBarComponent from '@/components/NavBarComponent'
 import { GetServerSidePropsContext } from 'next'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
+import styles from "../styles/Styles.module.css"
 
 // Define your post type
 type PostType = {
@@ -36,6 +37,54 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
   
   const supabase = useSupabaseClient()
 
+  const likePost = useCallback(async (postId : number) => {
+    // Check if this user has already liked this post
+    const { data: likesData, error: likesError } = await supabase
+      .from('likes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('post_id', postId);
+  
+    if (likesError) console.log('Error fetching likes: ', likesError)
+    else if (likesData.length > 0) {
+      console.log('User has already liked this post');
+    } else {
+      // Fetch the current number of likes for this post
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('likes')
+        .eq('id', postId);
+  
+      if (postError) console.log('Error fetching post: ', postError)
+      else if (postData.length === 0) {
+        console.log('No post found with this id');
+      } else {
+        const newLikes = postData[0].likes + 1;
+  
+        // Increment the likes for this post
+        const { data: updateData, error: updateError } = await supabase
+          .from('posts')
+          .update({ likes: newLikes })
+          .eq('id', postId);
+  
+        if (updateError) console.log('Error updating post: ', updateError)
+        else {
+          // Add a row to the likes table
+          const { data: likesData, error: likesError } = await supabase
+            .from('likes')
+            .insert([
+              { user_id: user.id, post_id: postId }
+            ]);
+  
+          if (likesError) console.log('Error inserting like: ', likesError)
+          else {
+            console.log('Successfully liked post');
+            // You might want to manually update the closestPosts state to reflect the new like
+          }
+        }
+      }
+    }
+  }, [supabase, user.id]);
   useEffect(() => {
     const startTime = new Date(); // set the startTime when the component mounts
 
@@ -124,19 +173,9 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
           <h2 style={{fontSize: '2em'}}>{post.title}</h2>
           <h3 style={{fontSize: '0.8em'}}>{post.authors.join(', ')}</h3>
           <p style={{fontSize: '1.2em', width: '70%', paddingTop: '30px', paddingBottom: '30px'}}>{post.content}</p>
-          <a href={post.pdf} style={{
-            position: 'relative',
-            width: '138px',
-            height: '38px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '10px 0',
-            background: '#6F7DFF',
-            borderRadius: '12px'
-          }}>View PDF</a>
+          <a href={post.pdf} className={styles.link}>View PDF</a>
           
-          <p>Likes: {post.likes}</p>
+          <button className={styles.button}>Likes: {post.likes}</button>
         </div>
       ) : (
         'Loading...'
