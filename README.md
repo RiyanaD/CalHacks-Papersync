@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+### Holland Pleskac is mentioned as a contributor, but we just cloned his repository at the start of the hackathon. His repository was public and only contained boilerplate code for authentication. He did not contribute to this project at all.
 
 ## Getting Started
 
