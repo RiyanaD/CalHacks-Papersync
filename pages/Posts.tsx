@@ -100,14 +100,16 @@ export default function Posts({ initialSession } : {initialSession: any}) {
     }
    
 
-    const sentencesResponse = await axios.post(
+
+    //is this fradulent?
+    const fraudDetection = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
           model: 'gpt-4',
           messages: [
               {
                   role: "system",
-                  content: "This is a chat that a user had with a chatbot. Describe the user in as many descriptive sentences as you can, but do so from the first-person point of view. For example, I am very interested in video games. could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. End every sentence with a newline."
+                  content: "You are a bot that determines the validity of any given research paper that the user tries to upload. Look for pornographic, informal, or anything that can be deemed as misinfomartion. You are to say 'yes' or 'no' to the user when they try to submit their paper"
               },
               {
                   role: "user",
@@ -127,53 +129,94 @@ export default function Posts({ initialSession } : {initialSession: any}) {
       }
     );
 
+    const answer = fraudDetection.data.choices[0].message.content;
 
-
-    setSummary(sentencesResponse.data.choices[0].message.content)
-
-    const data = sentencesResponse.data.choices[0].message.content;
-    const newData = data.split('\n')
-
-    
-    const response = await axios.post(
-        'https://api.openai.com/v1/embeddings',
+    if (answer === 'no') {
+      alert("Please re-enter valid research...")
+      setTitle('')
+      setAuthors([''])
+      setContent('')
+      setPDF('')
+      setPosterID('')
+      setSummary('')
+    }else{
+      const sentencesResponse = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
         {
-            model: 'text-embedding-ada-002',
-            input: newData,
+            model: 'gpt-4',
+            messages: [
+                {
+                    role: "system",
+                    content: "This is a chat that a user had with a chatbot. Describe the user in as many descriptive sentences as you can, but do so from the first-person point of view. For example, I am very interested in video games. could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. End every sentence with a newline."
+                },
+                {
+                    role: "user",
+                    content: content
+                }
+            ],
+            max_tokens: 200,
+            n: 1,
+            stop: null,
+            temperature: 0,
         },
         {
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ` + process.env.NEXT_PUBLIC_API_KEY,
+                Authorization: `Bearer `  + process.env.NEXT_PUBLIC_API_KEY,
             },
-        },
-    );
-    
-    const embeddings = response.data.data[0].embedding; // hypothetical response format
-    
-
-    const post: Post = {
-      title: title,
-      authors: authors,
-      content: content,
-      pdf: pdf,
-      embedding: embeddings,
-      poster_id: initialSession.user.id,
-    };
-    // Perform further actions with the post object
-    // For example, you could send it to a server or save it to a database
-    try {
-        const { data, error } = await supabase.from('posts').insert([post]);
-
-        if (error) {
-        console.error('Error inserting post:', error);
-        } else {
-        console.log('Your post has been created');
         }
-    } catch (error) {
-        console.error('Error inserting post:', error);
+      );
+  
+  
+  
+      setSummary(sentencesResponse.data.choices[0].message.content)
+  
+      const data = sentencesResponse.data.choices[0].message.content;
+      const newData = data.split('\n')
+  
+      
+      const response = await axios.post(
+          'https://api.openai.com/v1/embeddings',
+          {
+              model: 'text-embedding-ada-002',
+              input: newData,
+          },
+          {
+              headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ` + process.env.NEXT_PUBLIC_API_KEY,
+              },
+          },
+      );
+      
+      const embeddings = response.data.data[0].embedding; // hypothetical response format
+      
+  
+      const post: Post = {
+        title: title,
+        authors: authors,
+        content: content,
+        pdf: pdf,
+        embedding: embeddings,
+        poster_id: initialSession.user.id,
+      };
+      // Perform further actions with the post object
+      // For example, you could send it to a server or save it to a database
+      try {
+          const { data, error } = await supabase.from('posts').insert([post]);
+  
+          if (error) {
+          console.error('Error inserting post:', error);
+          } else {
+          console.log('Your post has been created');
+          }
+      } catch (error) {
+          console.error('Error inserting post:', error);
+      }
     }
+  
   };
+
 
   return (
     <div className="flex flex-col justify-center">
@@ -247,17 +290,24 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           ></textarea>
         </div>
         
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="pdf">PDF</label>
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            PDF
+          </label>
           <input
             type="file"
             id="pdf"
             value={pdf}
-            accept="application/pdf"
-            onChange={(e) => {
-              handlePDFChange(e);
+            onChange={handlePDFChange}
+            style={{
+              marginLeft: "auto",
+              marginRight: "auto",
+              borderRadius: "10px",
+              height: "54.98px",
+              background: "#1E1E1E",
+              width: "100%",
+              padding: "10px"
             }}
-            className="text-center"
           />
         </div>
         
@@ -271,8 +321,9 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           >Upload PDF</button>
         </div> */}
 
-
-        <button type="submit">Create Post</button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Centering the button */}
+          <button type="submit" style={{background: "#6F7DFF", borderRadius: "7px", fontWeight: "bold", padding: "10px", paddingLeft: "20px", paddingRight: "20px", marginTop: '40px', marginBottom: '80px', color: "#2C3163", width: '150px'}}>Create Post</button>
+        </div>
       </form>
     </div>
   );
