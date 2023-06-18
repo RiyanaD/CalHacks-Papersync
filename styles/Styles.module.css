@@ -1,5 +1,4 @@
 
-
 .container {
   background-color: black;
   margin: 20px;
@@ -20,18 +19,18 @@
 .title {
   margin: 0 0 10px 0;
   font-size: 24px;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .author {
   margin: 0 0 10px 0;
   font-size: 10px;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .content {
   margin: 0 0 10px 0;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .link {
@@ -41,3 +40,8 @@
   align-items: flex-end;
 }
   
+
+.image {
+  max-width: 300px; /* Adjust the maximum width as needed */
+  max-height: 400px; /* Adjust the maximum height as needed */
+}

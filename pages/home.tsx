@@ -6,6 +6,11 @@ import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 import * as tf from '@tensorflow/tfjs';
+import preview1 from "/public/previews/preview1.png"
+import preview2 from "/public/previews/preview2.png"
+import preview3 from "/public/previews/preview3.png"
+import preview4 from "/public/previews/preview4.png"
+import preview5 from "/public/previews/preview5.png"
 
 type Post = {
   id: number,
@@ -15,7 +20,8 @@ type Post = {
   abstract: string,
   pdf: string,
   embedding: number[],
-  likes: number
+  likes: number,
+  imagePath: string
 }
 
 export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
@@ -43,7 +49,8 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
         abstract: post.abstract,
         pdf: '', // Assuming there is no pdf field in the fetched data
         embedding: post.embedding, // Assuming likes is the embedding field
-        likes: post.likes
+        likes: post.likes,
+        imagePath: post.imagePath
       }))
       setPosts(formattedData)
     }
@@ -97,7 +104,8 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
       }
     }
   }, [supabase, user.id]);
-
+  const previews = [preview1, preview2, preview3, preview4, preview5];
+  // {loadImagePath(post.id)}
   return (
       <>
       <style jsx global>{`
@@ -111,6 +119,8 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
           {/* nav bar */}
           {posts && posts.map((post, index) => (
           <div key={post.id} className={styles.post}>
+            {/* <img src={eval(`preview${(index % 5) + 1}`).src} alt={`Preview ${index + 1}`} /> */}
+            <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
             <h2 className={styles.title}>{post.title}</h2>
             <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
             <p className={styles.abstract}>{post.abstract}</p>

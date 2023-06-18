@@ -8,6 +8,7 @@ import NavBarComponent from '@/components/NavBarComponent'  // imports the nav b
 import axios from 'axios'
 import { useRouter } from 'next/router';
 
+
 interface Post {
   title: string;
   authors:  string[];
