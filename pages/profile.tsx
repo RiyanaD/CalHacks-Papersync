@@ -162,8 +162,8 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
               />
             </div>
           </div>
-          <button style={{ background: "#1E1E1E" }} onClick={updateProfile}>Save</button>
-          <button style={{ background: "#1E1E1E" }} onClick={() => setEditing(false)}>Cancel</button>
+          <button style={{ background: "#6F7DFF", borderRadius: "7px", fontWeight: "bold", marginRight: "40px", padding: "10px", paddingLeft: "20px", paddingRight: "20px", color: "#2C3163"}} onClick={updateProfile}>Save</button>
+          <button style={{ background: "#67B7F1", borderRadius: "7px", fontWeight: "bold", color: "#25455B", padding: "10px", paddingLeft: "20px", paddingRight: "20px"}} onClick={() => setEditing(false)}>Cancel</button>
         </>
       ) : (
         <>
@@ -173,7 +173,7 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
               <h2 style={{ fontSize: "48px", overflowWrap: "break-word" }}>{userProfile?.name}</h2>
               <h3 style={{ fontSize: "30px", overflowWrap: "break-word" }}>{userProfile?.organization}</h3>
               <p style={{ fontSize: "20px", overflowWrap: "break-word", height: 250, width: '100%' }}>{userProfile?.biography}</p>
-              <button onClick={() => setEditing(true)}>Edit</button>
+              <button onClick={() => setEditing(true)} style={{background: "#6F7DFF", borderRadius: "7px", fontWeight: "bold", marginRight: "40px", padding: "10px", paddingLeft: "20px", paddingRight: "20px", color: "#2C3163"}}>Edit</button>
             </div>
           </div>
         </>
