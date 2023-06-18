@@ -6,6 +6,7 @@ import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 import axios from 'axios'
+import { useRouter } from 'next/router';
 
 interface Post {
   title: string;
@@ -14,7 +15,7 @@ interface Post {
   pdf: string;
   embedding: number[] | null;
   poster_id: any;
-
+  summary: string;
 }
 
 // Initialize Supabase client
@@ -22,6 +23,7 @@ const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhb
 
 
 export default function Posts({ initialSession } : {initialSession: any}) {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState<string[]>(['']);
   const [content, setContent] = useState('');
@@ -108,11 +110,11 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             messages: [
                 {
                     role: "system",
-                    content: "This is a chat that a user had with a chatbot. Describe the user in as many descriptive sentences as you can, but do so from the first-person point of view. For example, I am very interested in video games. could be one description. Every unique description should be a sentence, and every sentence should represent a unique aspect of the user. End every sentence with a newline."
+                    content: "This is a research paper. In two or three sentences, tell it from the point of view from someone who is passionate about the very general topics that this paper describes. For example, if the paper is about a specific area of protein synthesis, the summary could be along the lines of \" I am really into biological sciences. \". Be extremeley general in the category. You shouldn't go too much into the specifics of the paper details, just the broad area of science (eg. chemistry, mathematics, physics, etc.)."
                 },
                 {
                     role: "user",
-                    content: content
+                    content: title + ": " + content
                 }
             ],
             max_tokens: 200,
@@ -127,8 +129,6 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             },
         }
       );
-  
-  
   
       setSummary(sentencesResponse.data.choices[0].message.content)
   
@@ -160,6 +160,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
         pdf: pdf,
         embedding: embeddings,
         poster_id: initialSession.user.id,
+        summary: sentencesResponse.data.choices[0].message.content
       };
       // Perform further actions with the post object
       // For example, you could send it to a server or save it to a database
@@ -169,7 +170,9 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           if (error) {
           console.error('Error inserting post:', error);
           } else {
+            
           console.log('Your post has been created');
+          router.push('/home');
           }
       } catch (error) {
           console.error('Error inserting post:', error);
@@ -177,7 +180,6 @@ export default function Posts({ initialSession } : {initialSession: any}) {
     }
   
   };
-
 
   return (
     <div className="flex flex-col justify-center">

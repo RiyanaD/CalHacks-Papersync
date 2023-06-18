@@ -24,8 +24,7 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
 
 
   useEffect(() => {
-    fetchPosts()
-    console.log(closestPosts)
+    setPosts(closestPosts)
   }, [])
 
   const fetchPosts = async () => {
@@ -92,12 +91,12 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
           if (likesError) console.log('Error inserting like: ', likesError)
           else {
             console.log('Successfully liked post');
-            fetchPosts();
+            // You might want to manually update the closestPosts state to reflect the new like
           }
         }
       }
     }
-  }, [fetchPosts, supabase, user.id]);
+  }, [supabase, user.id]);
 
   return (
       <>
@@ -164,7 +163,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     // Fetch the post embeddings
     const { data: postEmbeddingsData } = await supabase
     .from('posts')
-    .select('id, embedding, likes');
+    .select('*');
 
     // For each post, calculate its maximum cosine similarity to the user embeddings
     const similarities = [];
@@ -182,7 +181,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     // Sort the posts by similarity and take the first 100
     const closestPosts = similarities
     .sort((a, b) => b.similarity - a.similarity) // Note that we sort in descending order
-    .slice(0, 100)
+    .slice(0, 5)
     .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
 
     const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
@@ -191,7 +190,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       props: {
         initialSession: session,
         user: session.user,
-        closestPosts: closestPosts
+        closestPosts: sortedByLikes
       },
     }
 }
