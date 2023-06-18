@@ -4,12 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import {  GetServerSidePropsContext } from 'next'
+import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
 
 interface Post {
   created_at: Date;
   title: string;
   authors:  string[];
-  content: string;
+  abstract: string;
   pdf: string;
   embedding: number[];
   poster_id: any;
@@ -25,7 +26,7 @@ const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhb
 export default function Posts({ initialSession } : {initiailSession: any}) {
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState<string[]>(['']);
-  const [content, setContent] = useState('');
+  const [abstract, setAbstract] = useState('');
   const [created_at, setCreatedAt] = useState(new Date());
   const [embedding, setEmbedding] = useState<number[]>([]);
   const [pdf, setPDF] = useState('');
@@ -40,8 +41,8 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     setPosterID(e.target.value);
   }
 
-  const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+  const handleAbstractChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setAbstract(e.target.value);
   };
 
   const handleAuthorsChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -59,8 +60,8 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     e.preventDefault();
 
     // Perform validation if needed
-    if (!title || !content) {
-      console.log('Invalid post. Title and content are required.');
+    if (!title || !abstract) {
+      console.log('Invalid post. Title and abstract are required.');
       return;
     }
 
@@ -68,7 +69,7 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
       //created_at: created_at,
       title: title,
       authors: authors,
-      content: content,
+      abstract: abstract,
       pdf: pdf,
       //embedding: embedding,
       poster_id: initialSession.user.id,
@@ -89,35 +90,74 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
   };
 
   return (
-    <div className="flex flex-row justify-center">
+    <div className="flex flex-col justify-center">
+      <NavBarComponent />
+      <style jsx global>{`
+        body {
+          background-color: black;
+        }
+      `}</style>
+
       <form onSubmit={handleSubmit} className="flex flex-col p-4">
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="title">Title</label>
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Title
+          </label>
           <input
             type="text"
             id="title"
             value={title}
             onChange={handleTitleChange}
             className="text-center"
+            style={{
+              marginLeft: "auto",
+              marginRight: "auto",
+              borderRadius: "10px",
+              height: "54.98px",
+              background: "#1E1E1E",
+              width: "100%"
+            }}
           />
         </div>
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="authors">Authors</label>
+
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Authors
+          </label>
           <input
             type="text"
             id="authors"
             value={authors}
             onChange={handleAuthorsChange}
             className="text-center"
+            style={{
+              marginLeft: "auto",
+              marginRight: "auto",
+              borderRadius: "10px",
+              height: "54.98px",
+              background: "#1E1E1E",
+              width: "100%"
+            }}
           />
         </div>
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="content">Content</label>
+        
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Abstract
+          </label>
           <textarea
-            id="content"
-            value={content}
-            onChange={handleContentChange}
+            id="abstract"
+            value={abstract}
+            onChange={handleAbstractChange}
             className="text-center"
+            style={{
+              marginLeft: "auto",
+              marginRight: "auto",
+              borderRadius: "10px",
+              height: "295.98px",
+              background: "#1E1E1E",
+              width: "100%"
+            }}
           ></textarea>
         </div>
         
@@ -131,6 +171,7 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
             className="text-center"
           />
         </div>
+
         <button type="submit">Create Post</button>
       </form>
     </div>

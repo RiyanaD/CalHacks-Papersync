@@ -11,7 +11,7 @@ type Post = {
   created_at: string,
   title: string,
   authors: string[],
-  content: string,
+  abstract: string,
   pdf: string,
   embedding: number[]
 }
@@ -36,7 +36,7 @@ export default function Home({ user }: { user: User }) {
         created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
         title: post.title,
         authors: post.authors, // Assuming user_id is the author here
-        content: post.content,
+        abstract: post.abstract,
         pdf: '', // Assuming there is no pdf field in the fetched data
         embedding: post.embedding // Assuming likes is the embedding field
       }))
@@ -59,7 +59,7 @@ export default function Home({ user }: { user: User }) {
           <div key={post.id} className={styles.post}>
             <h2 className={styles.title}>{post.title}</h2>
             <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-            <p className={styles.content}>{post.content}</p>
+            <p className={styles.abstract}>{post.abstract}</p>
             <a href={post.pdf} className={styles.link}>View PDF</a>
             {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
             {post.embedding && <p>{post.embedding.join(', ')}</p>}
