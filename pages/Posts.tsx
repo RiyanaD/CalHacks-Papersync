@@ -48,8 +48,34 @@ export default function Posts({ initialSession } : {initialSession: any}) {
     setAuthors(inputAuthors);
   };
 
-  const handlePDFChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePDFChange = async (e: ChangeEvent<HTMLInputElement>) => {
     setPDF(e.target.value);
+    // let file;
+
+    // if(e.target.files){
+    //   file = e.target.files[0];
+    //   console.log("Got the file") 
+    // }
+
+    // if(file){
+    //   console.log(file)
+    //   const { data, error } = await supabase
+    //   .storage
+    //   .from('pdfs')
+    //   .upload(user.id , {
+    //     cacheControl: '3600',
+    //     upsert: false
+    //   }); 
+
+    //   if(error){
+    //     console.error("File upload error")
+    //   }
+    //   else{
+    //     console.error("File upload success")
+    //   }
+    // }
+
+
   };
 
 
@@ -162,13 +188,26 @@ export default function Posts({ initialSession } : {initialSession: any}) {
         <div className="mb-2 p-4 text-center">
           <label className="block pb-3" htmlFor="pdf">PDF</label>
           <input
-            type="text"
+            type="file"
             id="pdf"
             value={pdf}
-            onChange={handlePDFChange}
+            accept=".pdf"
+            onChange={(e) => {
+              handlePDFChange(e);
+            }}
             className="text-center"
           />
         </div>
+        
+        {/* <div className="mb-2 p-4 text-center" style={{color: "white"}}>
+          <label className="block pb-3" htmlFor="pdf">PDF</label>
+          <button
+            id="pdf"
+            value={pdf}
+            onClick={handlePDFChange}
+            className="text-center"
+          >Upload PDF</button>
+        </div> */}
 
 
         <button type="submit">Create Post</button>
