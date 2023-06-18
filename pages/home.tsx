@@ -12,6 +12,8 @@ import preview3 from "/public/previews/preview3.png"
 import preview4 from "/public/previews/preview4.png"
 import preview5 from "/public/previews/preview5.png"
 import Link from 'next/link';
+import { AiFillHeart } from 'react-icons/ai';
+
 
 type Post = {
   id: number,
@@ -115,8 +117,9 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
               </Link>
               <div className={styles.actions}>
                 <a target = "_blank" href={post.pdf} className={styles.link}>View PDF</a>
-                <button onClick={() => likePost(post.id)} className={styles.button}>Like</button>
-                <p className={styles.likes}>{post.likes} likes</p>
+                <button onClick={() => likePost(post.id)} className={styles.button}>
+                  <AiFillHeart size={16} style={{ color: "#2C3163", marginRight: '5px' }} /> Likes: {post.likes}
+                </button>
               </div>
             </div>
           ))}
