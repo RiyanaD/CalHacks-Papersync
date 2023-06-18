@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
 import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
@@ -13,15 +13,18 @@ type Post = {
   authors: string[],
   abstract: string,
   pdf: string,
-  embedding: number[]
+  embedding: number[],
+  likes: number
 }
 
 export default function Home({ user }: { user: User }) {
   const supabase = useSupabaseClient<Database>()
   const [posts, setPosts] = useState<Post[]>([])
 
+
   useEffect(() => {
     fetchPosts()
+    
   }, [])
 
   const fetchPosts = async () => {
@@ -31,18 +34,69 @@ export default function Home({ user }: { user: User }) {
   
     if (error) console.log('Error fetching posts: ', error)
     else {
+      console.log(data);
       const formattedData: Post[] = data.map(post => ({
-        id: Number(post.post_id),
+        id: Number(post.id),
         created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
         title: post.title,
         authors: post.authors, // Assuming user_id is the author here
         abstract: post.abstract,
         pdf: '', // Assuming there is no pdf field in the fetched data
-        embedding: post.embedding // Assuming likes is the embedding field
+        embedding: post.embedding, // Assuming likes is the embedding field
+        likes: post.likes
       }))
       setPosts(formattedData)
     }
   }
+
+  const likePost = useCallback(async (postId : number) => {
+    // Check if this user has already liked this post
+    const { data: likesData, error: likesError } = await supabase
+      .from('likes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('post_id', postId);
+  
+    if (likesError) console.log('Error fetching likes: ', likesError)
+    else if (likesData.length > 0) {
+      console.log('User has already liked this post');
+    } else {
+      // Fetch the current number of likes for this post
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('likes')
+        .eq('id', postId);
+  
+      if (postError) console.log('Error fetching post: ', postError)
+      else if (postData.length === 0) {
+        console.log('No post found with this id');
+      } else {
+        const newLikes = postData[0].likes + 1;
+  
+        // Increment the likes for this post
+        const { data: updateData, error: updateError } = await supabase
+          .from('posts')
+          .update({ likes: newLikes })
+          .eq('id', postId);
+  
+        if (updateError) console.log('Error updating post: ', updateError)
+        else {
+          // Add a row to the likes table
+          const { data: likesData, error: likesError } = await supabase
+            .from('likes')
+            .insert([
+              { user_id: user.id, post_id: postId }
+            ]);
+  
+          if (likesError) console.log('Error inserting like: ', likesError)
+          else {
+            console.log('Successfully liked post');
+            fetchPosts();
+          }
+        }
+      }
+    }
+  }, [fetchPosts, supabase, user.id]);
 
   return (
       <>
@@ -61,6 +115,8 @@ export default function Home({ user }: { user: User }) {
             <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
             <p className={styles.abstract}>{post.abstract}</p>
             <a href={post.pdf} className={styles.link}>View PDF</a>
+            <button onClick={() => likePost(post.id)}>Like</button>
+            <p>{post.likes} likes</p>
             {/* Since embedding is a float array, just for illustration here. You might want to do something else with this data */}
             {post.embedding && <p>{post.embedding.join(', ')}</p>}
           </div>
