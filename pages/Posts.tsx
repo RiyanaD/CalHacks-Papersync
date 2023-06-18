@@ -14,24 +14,21 @@ interface Post {
   pdf: string;
   embedding: number[] | null;
   poster_id: any;
-};
 
-const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnc3FybG9kZGlia2dmYmJpaHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODcwMTk4NDksImV4cCI6MjAwMjU5NTg0OX0.dIjB8bcDtniKGy54YC1ZYhvvFmvRB7igDJAZheYCRN0', {
-  schema: 'public'
-});
+}
 
-export default function Posts({ initialSession } : {initiailSession: any}) {
+// Initialize Supabase client
+const supabase = createClient('https://cgsqrloddibkgfbbihvf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnc3FybG9kZGlia2dmYmJpaHZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODcwMTk4NDksImV4cCI6MjAwMjU5NTg0OX0.dIjB8bcDtniKGy54YC1ZYhvvFmvRB7igDJAZheYCRN0');
+
+
+export default function Posts({ initialSession } : {initialSession: any}) {
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState<string[]>(['']);
   const [content, setContent] = useState('');
   const [pdf, setPDF] = useState('');
-  const [summary, setSummary] = useState('');
   const [poster_id, setPosterID] = useState('');
   const [summary, setSummary] = useState('');
   
-  const handleSummaryChanged = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setSummary(e.target.value);
-  }
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -53,6 +50,7 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
   const handlePDFChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPDF(e.target.value);
   };
+
 
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -180,11 +178,21 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
   
   };
 
+
   return (
-    <div className="flex flex-row justify-center">
+    <div className="flex flex-col justify-center">
+      <NavBarComponent />
+      <style jsx global>{`
+        body {
+          background-color: black;
+        }
+      `}</style>
+
       <form onSubmit={handleSubmit} className="flex flex-col p-4">
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="title">Title</label>
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Title
+          </label>
           <input
             type="text"
             id="title"
@@ -201,8 +209,11 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
             }}
           />
         </div>
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="authors">Authors</label>
+
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Authors
+          </label>
           <input
             type="text"
             id="authors"
@@ -219,8 +230,11 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
             }}
           />
         </div>
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="content">Content</label>
+        
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            Abstract
+          </label>
           <textarea
             id="abstract"
             value={content}
@@ -264,7 +278,7 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
       </form>
     </div>
   );
-}
+};
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
