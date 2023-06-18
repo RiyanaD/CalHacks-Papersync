@@ -250,18 +250,30 @@ export default function Posts({ initialSession } : {initialSession: any}) {
           ></textarea>
         </div>
         
-        <div className="mb-2 p-4 text-center">
-          <label className="block pb-3" htmlFor="pdf">PDF</label>
+        <div className="mb-2 p-4" style={{ width: "912px", margin: "0 auto", color: "white"}}>
+          <label className="block pb-3" htmlFor="title" style={{ textAlign: "left" }}>
+            PDF
+          </label>
           <input
             type="text"
             id="pdf"
             value={pdf}
             onChange={handlePDFChange}
+            style={{
+              marginLeft: "auto",
+              marginRight: "auto",
+              borderRadius: "10px",
+              height: "54.98px",
+              background: "#1E1E1E",
+              width: "100%",
+              padding: "10px"
+            }}
           />
         </div>
 
-
-        <button type="submit">Create Post</button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Centering the button */}
+          <button type="submit" style={{background: "#6F7DFF", borderRadius: "7px", fontWeight: "bold", padding: "10px", paddingLeft: "20px", paddingRight: "20px", marginTop: '40px', marginBottom: '80px', color: "#2C3163", width: '150px'}}>Create Post</button>
+        </div>
       </form>
     </div>
   );
