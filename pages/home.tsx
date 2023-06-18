@@ -124,7 +124,7 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
                 <div className={styles.content}>
                   <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
                   <div className={styles.details}>
-                    <h2 className={styles.title}>{post.title}</h2>
+                    <h2 className={styles.title}>{post.title.length > 75 ? post.title.substring(0, 75) + "..." : post.title}</h2>
                     <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
                     <p className={styles.abstract}>{post.abstract}</p>
                   </div>
