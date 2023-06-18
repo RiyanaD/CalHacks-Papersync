@@ -5,6 +5,7 @@ import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
 import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
+import * as tf from '@tensorflow/tfjs';
 
 type Post = {
   id: number,
@@ -17,14 +18,14 @@ type Post = {
   likes: number
 }
 
-export default function Home({ user }: { user: User }) {
+export default function Home({ user, closestPosts }: { user: User, closestPosts: Post[] }) {
   const supabase = useSupabaseClient<Database>()
   const [posts, setPosts] = useState<Post[]>([])
 
 
   useEffect(() => {
     fetchPosts()
-    
+    console.log(closestPosts)
   }, [])
 
   const fetchPosts = async () => {
@@ -125,6 +126,20 @@ export default function Home({ user }: { user: User }) {
   )
 }
 
+// A function to calculate the cosine similarity between two embeddings
+async function cosineSimilarity(embedding1: number[], embedding2: number[]): Promise<number> {
+  const a = tf.tensor1d(embedding1);
+  const b = tf.tensor1d(embedding2);
+  
+  const magnitudeA = tf.norm(a);
+  const magnitudeB = tf.norm(b);
+  const dotProduct = tf.sum(tf.mul(a, b));
+  
+  const similarity = tf.div(dotProduct, tf.mul(magnitudeA, magnitudeB));
+
+  return (await similarity.array()) as number; // Assert that the result is a number
+}
+
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   // Create authenticated Supabase Client
   const supabase = createServerSupabaseClient(ctx)
@@ -141,10 +156,42 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
       },
     }
 
-  return {
-    props: {
-      initialSession: session,
-      user: session.user,
-    },
-  }
+    const { data: userEmbeddingsData } = await supabase
+    .from('user_embeddings')
+    .select('*')
+    .eq('user_id', session.user.id);
+
+    // Fetch the post embeddings
+    const { data: postEmbeddingsData } = await supabase
+    .from('posts')
+    .select('id, embedding, likes');
+
+    // For each post, calculate its maximum cosine similarity to the user embeddings
+    const similarities = [];
+    for (const post of postEmbeddingsData!) {
+      let maxSimilarity = -Infinity;
+      for (const userEmbedding of userEmbeddingsData!) {
+        const similarity = await cosineSimilarity(userEmbedding.embedding, post.embedding);
+        if (similarity > maxSimilarity) {
+          maxSimilarity = similarity;
+        }
+    }
+    similarities.push({ id: post.id, similarity: maxSimilarity });
+    }
+
+    // Sort the posts by similarity and take the first 100
+    const closestPosts = similarities
+    .sort((a, b) => b.similarity - a.similarity) // Note that we sort in descending order
+    .slice(0, 100)
+    .map(({ id }) => postEmbeddingsData!.find(post => post.id === id));
+
+    const sortedByLikes = closestPosts.sort((a, b) => (b ? b.likes : 0) - (a ? a.likes : 0));
+
+    return {
+      props: {
+        initialSession: session,
+        user: session.user,
+        closestPosts: closestPosts
+      },
+    }
 }
