@@ -4,8 +4,7 @@ import { createServerSupabaseClient, User } from '@supabase/auth-helpers-nextjs'
 import { Database } from '../types/database'
 import styles from "../styles/Styles.module.css"
 import { GetServerSidePropsContext } from 'next'
-import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar
-import { Document, Page } from 'react-pdf'; 
+import NavBarComponent from '@/components/NavBarComponent'  // imports the nav bar 
 import * as tf from '@tensorflow/tfjs';
 import preview1 from "/public/previews/preview1.png"
 import preview2 from "/public/previews/preview2.png"
@@ -19,7 +18,7 @@ type Post = {
   created_at: string,
   title: string,
   authors: string[],
-  abstract: string,
+  content: string,
   pdf: string,
   embedding: number[],
   likes: number,
@@ -34,28 +33,6 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
   useEffect(() => {
     setPosts(closestPosts)
   }, [])
-
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-  
-    if (error) console.log('Error fetching posts: ', error)
-    else {
-      console.log(data);
-      const formattedData: Post[] = data.map(post => ({
-        id: Number(post.id),
-        created_at: new Date().toISOString(), // You'll need to adjust this if you have a specific date to assign
-        title: post.title,
-        authors: post.authors, // Assuming user_id is the author here
-        abstract: post.abstract,
-        pdf: '', // Assuming there is no pdf field in the fetched data
-        embedding: post.embedding, // Assuming likes is the embedding field
-        likes: post.likes,
-      }))
-      setPosts(formattedData)
-    }
-  }
 
   const likePost = useCallback(async (postId : number) => {
     // Check if this user has already liked this post
@@ -124,9 +101,15 @@ export default function Home({ user, closestPosts }: { user: User, closestPosts:
                 <div className={styles.content}>
                   <img src={previews[index % previews.length].src} alt={`Preview ${index + 1}`} className={styles.image} />
                   <div className={styles.details}>
-                    <h2 className={styles.title}>{post.title.length > 75 ? post.title.substring(0, 75) + "..." : post.title}</h2>
+                    <h2 className={styles.title}>
+                      {/* If the title is too long, display a shortened version */}
+                      {post.title.length > 75 ? post.title.substring(0, 75) + "..." : post.title}
+                    </h2>
                     <h3 className={styles.author}>Author: {post.authors.join(', ')}</h3>
-                    <p className={styles.abstract}>{post.abstract}</p>
+                    <p className={styles.content}>
+                      {/* If the content is too long, display a shortened version */}
+                      {post.content.length > 200 ? post.content.substring(0, 200) + "..." : post.content}
+                    </p>
                   </div>
                 </div>
               </Link>
