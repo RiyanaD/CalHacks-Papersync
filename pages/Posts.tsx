@@ -53,13 +53,13 @@ export default function Posts({ initialSession } : {initialSession: any}) {
   
 
   const handlePDFChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    // setPDF(e.target.value);
-    let file;
+    setPDF(e.target.value);
+    //let file;
 
-    if(e.target.files){
-      file = e.target.files[0];
-      console.log("Got the file") 
-    }
+    //if(e.target.files){
+    //  file = e.target.files[0];
+    //  console.log("Got the file") 
+    //}
 
   
     // if(file){
@@ -298,7 +298,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
             PDF
           </label>
           <input
-            type="file"
+            type="text"
             id="pdf"
             value={pdf}
             onChange={handlePDFChange}
@@ -312,7 +312,7 @@ export default function Posts({ initialSession } : {initialSession: any}) {
               padding: "10px"
             }}
           />
-        </div>
+        </div> 
         
         {/* <div className="mb-2 p-4 text-center" style={{color: "white"}}>
           <label className="block pb-3" htmlFor="pdf">PDF</label>
