@@ -153,12 +153,13 @@ export default function PostPage({ user, profile }: { user: User, profile: Profi
 
   // Render the properties of the post
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100vw', height: '100vh', position: 'relative', backgroundColor: 'black'}}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100vw', height: '100vh', position: 'relative', backgroundColor: 'black'}}>
     <style jsx global>{`
     body {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        background-color: black;
     }
     `}</style>
         <NavBarComponent />
