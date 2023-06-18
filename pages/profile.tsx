@@ -119,25 +119,61 @@ export default function Profile({ user, profile }: { user: User, profile: Profil
   }
 
   return (
-    <div>
-        <NavBarComponent/>
+    <>
+    <style jsx global>{`
+        body {
+          background-color: black;
+        }
+      `}</style>
+      <NavBarComponent/>
+
+      <div style={{color:"white", marginLeft: "20%", marginRight: "20%", marginTop: "20px"}}>
       {editing ? (
         <>
-          <input name="name" onChange={handleInputChange} defaultValue={userProfile?.name} />
-          <input name="organization" onChange={handleInputChange} defaultValue={userProfile?.organization} />
-          <input name="biography" onChange={handleInputChange} defaultValue={userProfile?.biography} />
-          <button onClick={updateProfile}>Save</button>
-          <button onClick={() => setEditing(false)}>Cancel</button>
+          <div style={{ marginBottom: "10px" }}>
+            <input
+              name="name"
+              style={{ background: "grey", color: "white" }}
+              onChange={handleInputChange}
+              defaultValue={userProfile?.name}
+            />
+          </div>
+          <div style={{ marginBottom: "10px" }}>
+            <input
+              name="organization"
+              style={{ background: "grey", color: "white" }}
+              onChange={handleInputChange}
+              defaultValue={userProfile?.organization}
+            />
+          </div>
+          <div style={{ marginBottom: "10px" }}>
+            <input
+              name="biography"
+              style={{ background: "grey", color: "white" }}
+              onChange={handleInputChange}
+              defaultValue={userProfile?.biography}
+            />
+          </div>
+
+          <button style={{ background: "#1E1E1E" }} onClick={updateProfile}>Save</button>
+          <button style={{ background: "#1E1E1E" }} onClick={() => setEditing(false)}>Cancel</button>
         </>
       ) : (
         <>
-          <h2>{userProfile?.name}</h2>
-          <h3>{userProfile?.organization}</h3>
-          <p>{userProfile?.biography}</p>
-          <button onClick={() => setEditing(true)}>Edit</button>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            <div style={{ width: "200px", height: "200px", borderRadius: "50%", background: "grey", flexShrink: 0 }}></div>
+            <div style={{ marginLeft: "40px", maxWidth: "700px", flexShrink: 0 }}>
+              <h2 style={{ fontSize: "48px", overflowWrap: "break-word" }}>{userProfile?.name}</h2>
+              <h3 style={{ fontSize: "30px", overflowWrap: "break-word" }}>{userProfile?.organization}</h3>
+              <p style={{ fontSize: "20px", overflowWrap: "break-word" }}>{userProfile?.biography}</p>
+              <button onClick={() => setEditing(true)}>Edit</button>
+            </div>
+          </div>
         </>
       )}
     </div>
+    </>
+    
   )
 }
 

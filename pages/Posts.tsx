@@ -50,6 +50,15 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
     setAuthors(inputAuthors);
   };
 
+  const avatarFile = event.target.files[0]
+  const { data, error } = await supabase
+    .storage
+    .from('avatars')
+    .upload('public/avatar1.png', avatarFile, {
+      cacheControl: '3600',
+      upsert: false
+    })
+
   const handlePDFChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPDF(e.target.value);
   };
@@ -171,6 +180,7 @@ export default function Posts({ initialSession } : {initiailSession: any}) {
             className="text-center"
           />
         </div>
+
 
         <button type="submit">Create Post</button>
       </form>
