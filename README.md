@@ -1,7 +1,3 @@
-### Holland Pleskac is mentioned as a contributor, but we just cloned his repository at the start of the hackathon. His repository was public and only contained boilerplate code for authentication. He did not contribute to this project at all.
-
-## Getting Started
-
 First, run the development server:
 
 ```bash
